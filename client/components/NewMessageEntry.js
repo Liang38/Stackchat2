@@ -3,7 +3,7 @@ import store, { postMessage, writeMessage } from '../store';
 
 export default class NewMessageEntry extends Component {
 
-  constructor () {
+  constructor() {
     super();
     this.state = store.getState();
 
@@ -11,19 +11,19 @@ export default class NewMessageEntry extends Component {
     this.handleSubmit = this.handleSubmit.bind(this);
   }
 
-  componentDidMount () {
+  componentDidMount() {
     this.unsubscribe = store.subscribe(() => this.setState(store.getState()));
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     this.unsubscribe();
   }
 
-  handleChange (evt) {
+  handleChange(evt) {
     store.dispatch(writeMessage(evt.target.value))
   }
 
-  handleSubmit (evt) {
+  handleSubmit(evt) {
     evt.preventDefault();
 
     const { name, newMessageEntry } = this.state;
@@ -34,7 +34,7 @@ export default class NewMessageEntry extends Component {
     store.dispatch(writeMessage(''));
   }
 
-  render () {
+  render() {
     return (
       <form id="new-message-form" onSubmit={this.handleSubmit}>
         <div className="input-group input-group-lg">
