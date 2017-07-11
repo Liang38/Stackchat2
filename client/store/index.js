@@ -7,6 +7,7 @@ import newMessageEntry from './newMessageEntry';
 import name from './name';
 import messages from './messages';
 import channels from './channels';
+import selectedChannel from './selectedChannel';
 
 // INITIAL STATE
 
@@ -15,15 +16,18 @@ const initialState = {
 	name: 'Reggie',
 	newMessageEntry: '',
 	channels: [],
-	newChannelEntry: ''
+	newChannelEntry: '',
+	selectedChannel: {}
 };
 const combineReducer = combineReducers({
 	messages,
 	name,
 	channels,
 	newChannelEntry,
-	newMessageEntry
-})
+	newMessageEntry,
+	selectedChannel
+});
+
 const store = createStore(
 	combineReducer,
 	composeWithDevTools(applyMiddleware(
@@ -38,3 +42,4 @@ export * from './channels';
 export * from './newChannelEntry';
 export * from './newMessageEntry';
 export * from './name';
+export * from './selectedChannel';
