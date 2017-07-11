@@ -8,10 +8,11 @@ import socket from './socket';
 // INITIAL STATE
 
 const initialState = {
-  messages: [],
-  name: 'Reggie',
-  newMessageEntry: '',
-  channels: [],
+	messages: [],
+	name: 'Reggie',
+	newMessageEntry: '',
+	channels: [],
+	newChannelEntry: ''
 };
 
 // ACTION TYPES
@@ -21,70 +22,97 @@ const GET_MESSAGE = 'GET_MESSAGE';
 const GET_MESSAGES = 'GET_MESSAGES';
 const WRITE_MESSAGE = 'WRITE_MESSAGE';
 const GET_CHANNELS = 'GET_CHANNELS';
+const CREATE_CHANNEL = 'CREATE_CHANNEL';
+const WRITE_CHANNEL = 'WRITE_CHANNEL';
 
 // ACTION CREATORS
 
 export function updateName(name) {
-  const action = { type: UPDATE_NAME, name };
-  return action;
+	const action = { type: UPDATE_NAME, name };
+	return action;
 }
 
 export function getMessage(message) {
-  const action = { type: GET_MESSAGE, message };
-  return action;
+	const action = { type: GET_MESSAGE, message };
+	return action;
 }
 
 export function getMessages(messages) {
-  const action = { type: GET_MESSAGES, messages };
-  return action;
+	const action = { type: GET_MESSAGES, messages };
+	return action;
 }
 
 export function writeMessage(content) {
-  const action = { type: WRITE_MESSAGE, content };
-  return action;
+	const action = { type: WRITE_MESSAGE, content };
+	return action;
 }
 
 export function getChannels(channels) {
-  const action = { type: GET_CHANNELS, channels };
+	const action = { type: GET_CHANNELS, channels };
+	return action;
+}
+
+export function createChannel(channel) {
+	const action = { type: CREATE_CHANNEL, channel };
+	return action;
+}
+
+export function writeChannel(content) {
+	const action = { type: WRITE_CHANNEL, content };
+	return action;
 }
 
 // THUNK CREATORS
 
 export function fetchMessages() {
 
-  return function thunk(dispatch) {
-    return axios.get('/api/messages')
-      .then(res => res.data)
-      .then(messages => {
-        const action = getMessages(messages);
-        dispatch(action);
-      });
-  }
+	return function thunk(dispatch) {
+		return axios.get('/api/messages')
+			.then(res => res.data)
+			.then(messages => {
+				const action = getMessages(messages);
+				dispatch(action);
+			});
+	}
 }
 
 export function postMessage(message) {
 
-  return function thunk(dispatch) {
-    return axios.post('/api/messages', message)
-      .then(res => res.data)
-      .then(newMessage => {
-        const action = getMessage(newMessage);
-        dispatch(action);
-        socket.emit('new-message', newMessage);
-      });
-  }
-
+	return function thunk(dispatch) {
+		return axios.post('/api/messages', message)
+			.then(res => res.data)
+			.then(newMessage => {
+				const action = getMessage(newMessage);
+				dispatch(action);
+				socket.emit('new-message', newMessage);
+			});
+	}
 }
 
 export function fetchChannels() {
-  return function thunk(dispatch) {
-    return axios.get('/api/channels')
-      .then(res => res.data)
-      .then(channels => {
-        const action = getChannels(channels);
-        dispatch(action);
-      })
-  }
+
+	return function thunk(dispatch) {
+		return axios.get('/api/channels')
+			.then(res => res.data)
+			.then(channels => {
+				const action = getChannels(channels);
+				dispatch(action);
+			})
+	}
+}
+
+export function postChannel(channel, history) {
+
+	return function thunk(dispatch) {
+		return axios.post('/api/channels', channel)
+			.then(res => res.data)
+			.then(newChannel => {
+				const action = createChannel(newChannel);
+				dispatch(action);
+				socket.emit('new-channel', newChannel);
+				history.push(`/channels/${newChannel.id}`);
+			});
+	}
 }
 
 // REDUCER
@@ -113,50 +141,62 @@ export function fetchChannels() {
  */
 function reducer(state = initialState, action) {
 
-  switch (action.type) {
+	switch (action.type) {
 
-    case UPDATE_NAME:
-      return {
-        ...state,
-        name: action.name
-      };
+		case UPDATE_NAME:
+			return {
+				...state,
+				name: action.name
+			};
 
-    case GET_MESSAGES:
-      return {
-        ...state,
-        messages: action.messages
-      };
+		case GET_MESSAGES:
+			return {
+				...state,
+				messages: action.messages
+			};
 
-    case GET_MESSAGE:
-      return {
-        ...state,
-        messages: [...state.messages, action.message]
-      };
+		case GET_MESSAGE:
+			return {
+				...state,
+				messages: [...state.messages, action.message]
+			};
 
-    case WRITE_MESSAGE:
-      return {
-        ...state,
-        newMessageEntry: action.content
-      };
+		case WRITE_MESSAGE:
+			return {
+				...state,
+				newMessageEntry: action.content
+			};
 
-    case GET_CHANNELS:
-      return {
-        ...state,
-        channels: action.channels
-      };
+		case GET_CHANNELS:
+			return {
+				...state,
+				channels: action.channels
+			};
 
-    default:
-      return state;
-  }
+		case CREATE_CHANNEL:
+			return {
+				...state,
+				channels: [...state.channels, action.channel]
+			};
+
+		case WRITE_CHANNEL:
+			return {
+				...state,
+				newChannelEntry: action.content
+			};
+
+		default:
+			return state;
+	}
 
 }
 
 const store = createStore(
-  reducer,
-  composeWithDevTools(applyMiddleware(
-    thunkMiddleware,
-    createLogger()
-  ))
+	reducer,
+	composeWithDevTools(applyMiddleware(
+		thunkMiddleware,
+		createLogger()
+	))
 );
 
 export default store;
